@@ -89,7 +89,7 @@ namespace Application.Bookings.Commands
                     Message = "The selected Room is not available"
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new BookingResponse
                 {
