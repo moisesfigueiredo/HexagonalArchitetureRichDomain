@@ -1,8 +1,8 @@
-﻿using Domain.Guests.Entities;
+﻿using Domain.Bookings.Entities;
 using Domain.Guests.Enums;
-using Domain.Guests.ValueObjects;
 using Domain.Rooms.Exceptions;
 using Domain.Rooms.Ports;
+using Domain.Rooms.ValueObjects;
 
 namespace Domain.Rooms.Entities
 {

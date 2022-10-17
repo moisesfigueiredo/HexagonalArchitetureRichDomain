@@ -1,5 +1,5 @@
-﻿using Domain.Bookings.Ports;
-using Domain.Guests.Entities;
+﻿using Domain.Bookings.Entities;
+using Domain.Bookings.Ports;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data.Bookings

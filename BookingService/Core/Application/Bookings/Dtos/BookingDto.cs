@@ -1,4 +1,5 @@
 ﻿
+using Domain.Bookings.Entities;
 using Domain.Guests.Entities;
 using Domain.Guests.Enums;
 using Domain.Rooms.Entities;

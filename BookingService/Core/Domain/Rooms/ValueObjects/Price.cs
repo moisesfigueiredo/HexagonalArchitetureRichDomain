@@ -1,6 +1,6 @@
 ﻿using Domain.Guests.Enums;
 
-namespace Domain.Guests.ValueObjects
+namespace Domain.Rooms.ValueObjects
 {
     public class Price
     {

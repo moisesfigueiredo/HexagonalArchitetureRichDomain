@@ -1,6 +1,6 @@
 ﻿using Domain.Guests.Enums;
-using Domain.Guests.ValueObjects;
 using Domain.Rooms.Entities;
+using Domain.Rooms.ValueObjects;
 
 namespace Application.Rooms.Dtos
 {

@@ -1,6 +1,7 @@
 ﻿using Application.Bookings.Commands;
 using Application.Bookings.Dtos;
 using Application.Rooms.Responses;
+using Domain.Bookings.Entities;
 using Domain.Bookings.Ports;
 using Domain.Guests.Entities;
 using Domain.Guests.Enums;
@@ -8,6 +9,7 @@ using Domain.Guests.Ports;
 using Domain.Guests.ValueObjects;
 using Domain.Rooms.Entities;
 using Domain.Rooms.Ports;
+using Domain.Rooms.ValueObjects;
 using Moq;
 
 namespace ApplicationTests
@@ -77,7 +79,7 @@ namespace ApplicationTests
 
             Assert.NotNull(resp);
             Assert.False(resp.Success);
-            Assert.NotNull(resp.ErrorCode = ErrorCodes.BOOKING_MISSING_REQUIRED_INFORMATION);
+            Assert.Equal(ErrorCodes.BOOKING_MISSING_REQUIRED_INFORMATION, resp.ErrorCode);
             Assert.Equal("Room is a required information", resp.Message);
         }
 
@@ -136,7 +138,7 @@ namespace ApplicationTests
 
             Assert.NotNull(resp);
             Assert.False(resp.Success);
-            Assert.NotNull(resp.ErrorCode = ErrorCodes.BOOKING_MISSING_REQUIRED_INFORMATION);
+            Assert.Equal(ErrorCodes.BOOKING_MISSING_REQUIRED_INFORMATION, resp.ErrorCode);
             Assert.Equal("Start is a required information", resp.Message);
         }
 

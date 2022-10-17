@@ -1,5 +1,4 @@
-using Application.Payments.Dtos;
-using Domain.Guests.Entities;
+using Domain.Bookings.Entities;
 using Domain.Guests.Enums;
 using Action = Domain.Guests.Enums.Action;
 
