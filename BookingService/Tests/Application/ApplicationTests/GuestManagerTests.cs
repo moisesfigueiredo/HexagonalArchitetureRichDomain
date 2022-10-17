@@ -88,7 +88,7 @@ namespace ApplicationTests
             Assert.Equal("The ID passed is not valid", res.Message);
         }
 
-
+        [Theory]
         [InlineData("", "surnametest", "asdf@gmail.com")]
         [InlineData(null, "surnametest", "asdf@gmail.com")]
         [InlineData("Fulano", "", "asdf@gmail.com")]

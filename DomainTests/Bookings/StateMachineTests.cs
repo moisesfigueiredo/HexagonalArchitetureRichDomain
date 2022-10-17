@@ -1,182 +1,101 @@
-using Application.Guests;
-using Application.Guests.DTO;
-using Application.Guests.Requests;
-using Application.Rooms.Responses;
+using Application.Payments.Dtos;
 using Domain.Guests.Entities;
 using Domain.Guests.Enums;
-using Domain.Guests.Ports;
-using Domain.Guests.ValueObjects;
-using Moq;
+using Action = Domain.Guests.Enums.Action;
 
 namespace DomainTests.Bookings
 {
     public class StateMachineTests
     {
-        GuestManager guestManager;
-
         [Fact]
         [Trait("Domain", "State Machine")]
-        public async Task HappyPath()
+        public void ShouldAlwaysStartWithCreatedStatus()
         {
-            var guestDto = new GuestDto
-            {
-                Name = "Fulano",
-                Surname = "Ciclano",
-                Email = "abc@gmail.com",
-                IdNumber = "abca",
-                IdTypeCode = 1
-            };
+            var booking = new Booking();
 
-            int expectedId = 222;
-
-            var request = new CreateGuestRequest()
-            {
-                Data = guestDto,
-            };
-
-            var fakeRepo = new Mock<IGuestRepository>();
-
-            fakeRepo.Setup(x => x.Create(
-                It.IsAny<Guest>()))
-                .ReturnsAsync(expectedId);
-
-            guestManager = new GuestManager(fakeRepo.Object);
-
-            var res = await guestManager.CreateGuest(request);
-            Assert.NotNull(res);
-            Assert.True(res.Success);
-            Assert.Equal(res.Data.Id, expectedId);
-            Assert.Equal(res.Data.Name, guestDto.Name);
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
-        [InlineData("a")]
-        [InlineData("ab")]
-        [InlineData("abc")]
-        [Trait("Domain", "State Machine")]
-        public async Task Should_Return_InvalidPersonDocumentIdException_WhenDocsAreInvalid(string docNumber)
-        {
-            var guestDto = new GuestDto
-            {
-                Name = "Fulano",
-                Surname = "Ciclano",
-                Email = "abc@gmail.com",
-                IdNumber = docNumber,
-                IdTypeCode = 1
-            };
-
-            var request = new CreateGuestRequest()
-            {
-                Data = guestDto,
-            };
-
-            var fakeRepo = new Mock<IGuestRepository>();
-
-            fakeRepo.Setup(x => x.Create(
-                It.IsAny<Guest>()))
-                .ReturnsAsync(222);
-
-            guestManager = new GuestManager(fakeRepo.Object);
-
-            var res = await guestManager.CreateGuest(request);
-
-            Assert.NotNull(res);
-            Assert.False(res.Success);
-            Assert.Equal(ErrorCodes.INVALID_PERSON_ID, res.ErrorCode);
-            Assert.Equal("The ID passed is not valid", res.Message);
-        }
-
-        [Theory]
-        [InlineData("", "surnametest", "asdf@gmail.com")]
-        [InlineData(null, "surnametest", "asdf@gmail.com")]
-        [InlineData("Fulano", "", "asdf@gmail.com")]
-        [InlineData("Fulano", null, "asdf@gmail.com")]
-        [InlineData("Fulano", "surnametest", "")]
-        [InlineData("Fulano", "surnametest", null)]
-        [Trait("Domain", "State Machine")]
-        public async Task Should_Return_MissingRequiredInformation_WhenDocsAreInvalid(string name, string surname, string email)
-        {
-            var guestDto = new GuestDto
-            {
-                Name = name,
-                Surname = surname,
-                Email = email,
-                IdNumber = "abcd",
-                IdTypeCode = 1
-            };
-
-            var request = new CreateGuestRequest()
-            {
-                Data = guestDto,
-            };
-
-            var fakeRepo = new Mock<IGuestRepository>();
-
-            fakeRepo.Setup(x => x.Create(
-                It.IsAny<Guest>()))
-                .ReturnsAsync(222);
-
-            guestManager = new GuestManager(fakeRepo.Object);
-
-            var res = await guestManager.CreateGuest(request);
-
-            Assert.NotNull(res);
-            Assert.False(res.Success);
-            Assert.Equal(ErrorCodes.MISSING_REQUIRED_INFORMATION, res.ErrorCode);
-            Assert.Equal("Missing required information passed", res.Message);
+            Assert.Equal(BookingStatus.Created, booking.Status);
         }
 
         [Fact]
         [Trait("Domain", "State Machine")]
-        public async Task Should_Return_GuestNotFound_When_GuestDoesntExist()
+        public void ShouldSetStatusToPaidWhenPayingForABookingWithCreatedStatus()
         {
-            var fakeRepo = new Mock<IGuestRepository>();
+            var booking = new Booking();
 
-            Guest nullGuest = null;
+            booking.ChangeState(Action.Pay);
 
-            fakeRepo.Setup(x => x.Get(333))
-                .ReturnsAsync(nullGuest);
-
-            guestManager = new GuestManager(fakeRepo.Object);
-
-            var res = await guestManager.GetGuest(333);
-
-            Assert.NotNull(res);
-            Assert.False(res.Success);
-            Assert.Equal(ErrorCodes.GUEST_NOT_FOUND, res.ErrorCode);
-            Assert.Equal("No Guest record was found with the given Id", res.Message);
+            Assert.Equal(BookingStatus.Paid, booking.Status);
         }
 
         [Fact]
         [Trait("Domain", "State Machine")]
-        public async Task Should_Return_Guest_Success()
+        public void ShouldSetStatusToCanceldWhenCancelingABookingWithCreatedStatus()
         {
-            var fakeRepo = new Mock<IGuestRepository>();
+            var booking = new Booking();
 
-            var fakeGuest = new Guest
-            {
-                Id = 333,
-                Name = "Test",
-                DocumentId = new PersonId
-                {
-                    DocumentType = DocumentType.DriveLicence,
-                    IdNumber = "123"
-                }
-            };
+            booking.ChangeState(Action.Cancel);
 
-            fakeRepo.Setup(x => x.Get(333))
-                .ReturnsAsync((Guest?)fakeGuest);
+            Assert.Equal(BookingStatus.Canceled, booking.Status);
+        }
 
-            guestManager = new GuestManager(fakeRepo.Object);
+        [Fact]
+        [Trait("Domain", "State Machine")]
+        public void ShouldSetStatusToFinishedWhenFinishingAPaidBooking()
+        {
+            var booking = new Booking();
 
-            var res = await guestManager.GetGuest(333);
+            booking.ChangeState(Action.Pay);
+            booking.ChangeState(Action.Finish);
 
-            Assert.NotNull(res);
-            Assert.True(res.Success);
-            Assert.Equal(res.Data.Id, fakeGuest.Id);
-            Assert.Equal(res.Data.Name, fakeGuest.Name);
+            Assert.Equal(BookingStatus.Finished, booking.Status);
+        }
+
+        [Fact]
+        [Trait("Domain", "State Machine")]
+        public void ShouldSetStatusToRefoundedWhenRefoundingAPaidBooking()
+        {
+            var booking = new Booking();
+
+            booking.ChangeState(Action.Pay);
+            booking.ChangeState(Action.Refound);
+
+            Assert.Equal(BookingStatus.Refounded, booking.Status);
+        }
+
+        [Fact]
+        [Trait("Domain", "State Machine")]
+        public void ShouldSetStatusToCreatedWhenReopeningACanceledBooking()
+        {
+            var booking = new Booking();
+
+            booking.ChangeState(Action.Cancel);
+            booking.ChangeState(Action.Reopen);
+
+            Assert.Equal(BookingStatus.Created, booking.Status);
+        }
+
+        [Fact]
+        [Trait("Domain", "State Machine")]
+        public void ShouldNotChangeStatusWhenRefoundingABookingWithCreatedStatus()
+        {
+            var booking = new Booking();
+
+            booking.ChangeState(Action.Refound);
+
+            Assert.Equal(BookingStatus.Created, booking.Status);
+        }
+
+        [Fact]
+        [Trait("Domain", "State Machine")]
+        public void ShouldNotChangeStatusWhenRefoundingAFinishedBookin()
+        {
+            var booking = new Booking();
+
+            booking.ChangeState(Action.Pay);
+            booking.ChangeState(Action.Finish);
+            booking.ChangeState(Action.Refound);
+
+            Assert.Equal(BookingStatus.Finished, booking.Status);
         }
     }
 }
